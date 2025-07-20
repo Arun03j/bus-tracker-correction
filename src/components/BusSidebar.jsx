@@ -75,7 +75,7 @@ const BusSidebar = ({
       {/* Header */}
       <div className="p-2 border-b">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-base md:text-lg font-bold">Bus Tracker</h1>
+          <h1 className="text-base md:text-lg font-bold">JPR Bus Tracker</h1>
           <Button
             variant="outline"
             size="sm"
