@@ -148,7 +148,7 @@ const AppContent = () => {
         {/* User Profile Section - Moved to left side below title */}
         <div className="p-2 border-b bg-muted/30">
           <div className="flex items-center justify-between mb-3">
-            <h1 className="text-base md:text-lg font-bold">Bus Tracker</h1>
+            <h1 className="text-base md:text-lg font-bold">JPR Bus Tracker</h1>
             {isMobile && (
               <Button
                 variant="ghost"

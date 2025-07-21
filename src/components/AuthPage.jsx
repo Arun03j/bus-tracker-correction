@@ -31,7 +31,7 @@ const AuthPage = ({ onAuthSuccess }) => {
               <Bus className="h-8 w-8 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Bus Tracker</h1>
+              <h1 className="text-3xl font-bold text-gray-900">JPR Bus Tracker</h1>
               <p className="text-gray-600">Real-time Bus Location Tracking</p>
             </div>
           </div>
@@ -111,7 +111,7 @@ const AuthPage = ({ onAuthSuccess }) => {
                 <Bus className="h-8 w-8 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Bus Tracker</h1>
+                <h1 className="text-2xl font-bold text-gray-900">JPR Bus Tracker</h1>
                 <p className="text-gray-600">Real-time Bus Location Tracking</p>
               </div>
             </div>
