@@ -23,15 +23,15 @@ const AuthPage = ({ onAuthSuccess }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl mx-auto grid lg:grid-cols-2 gap-8 items-center">
+      <div className="w-full mx-auto">
         {/* Left side - Branding */}
-        <div className="hidden lg:block space-y-6">
+        {/* <div className="hidden lg:block space-y-6">
           <div className="flex items-center space-x-3">
             <div className="p-3 bg-primary rounded-lg">
               <Bus className="h-8 w-8 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">JPR Bus Tracker</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Bus Tracker</h1>
               <p className="text-gray-600">Real-time Bus Location Tracking</p>
             </div>
           </div>
@@ -101,7 +101,7 @@ const AuthPage = ({ onAuthSuccess }) => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Right side - Authentication Forms */}
         <div className="w-full">
