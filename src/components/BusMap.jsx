@@ -318,6 +318,7 @@ const BusMap = ({
       <MapContainer
         center={getMapCenter()}
         zoom={13}
+        zoomControl={false}
         className="h-full w-full"
         ref={mapRef}
       >
