@@ -183,7 +183,19 @@ const BusMap = ({
   const [userLocation, setUserLocation] = useState(null);
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationError, setLocationError] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
   const mapRef = useRef();
+
+  // Check if mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Listen to live driver locations
   useEffect(() => {
@@ -284,25 +296,31 @@ const BusMap = ({
   return (
     <div className={`h-full w-full ${className}`}>
       {/* Show My Location Button */}
-      <div className="absolute top-4 left-4 z-[1000] pointer-events-auto">
+      <div className={`absolute z-[1000] pointer-events-auto ${
+        isMobile ? 'bottom-20 right-4' : 'top-4 left-4'
+      }`}>
         <Button
           onClick={handleShowUserLocation}
           disabled={locationLoading}
-          className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg touch-manipulation min-h-[44px]"
+          className={`bg-blue-600 hover:bg-blue-700 text-white shadow-lg touch-manipulation min-h-[44px] ${
+            isMobile ? 'rounded-full w-14 h-14 p-0' : ''
+          }`}
           size="sm"
         >
           {locationLoading ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <Loader2 className={`h-4 w-4 animate-spin ${isMobile ? '' : 'mr-2'}`} />
           ) : (
-            <MapPin className="h-4 w-4 mr-2" />
+            <MapPin className={`h-4 w-4 ${isMobile ? '' : 'mr-2'}`} />
           )}
-          Show My Location
+          {!isMobile && 'Show My Location'}
         </Button>
       </div>
 
       {/* Location Error Alert */}
       {locationError && (
-        <div className="absolute top-16 left-4 right-4 z-[1000] bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg pointer-events-auto">
+        <div className={`absolute z-[1000] bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg pointer-events-auto ${
+          isMobile ? 'bottom-36 left-4 right-4' : 'top-16 left-4 right-4'
+        }`}>
           <div className="flex items-center justify-between">
             <span className="text-sm">{locationError}</span>
             <button
