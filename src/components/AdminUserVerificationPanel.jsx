@@ -1,4 +1,4 @@
-// Enhanced admin panel for manual user verification
+// Enhanced admin panel for manual user verification with mobile optimization
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button.jsx';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx';
@@ -171,14 +171,16 @@ const AdminUserVerificationPanel = ({ onClose }) => {
 
   const UserCard = ({ user: userData, isPending = true }) => (
     <Card className="mb-4">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2">
+      <CardContent className="p-3 sm:p-4">
+        {/* Mobile-first layout */}
+        <div className="space-y-3">
+          {/* User info section */}
+          <div className="flex items-start justify-between">
+            <div className="flex items-center space-x-2 flex-1 min-w-0">
               {getRoleIcon(userData.role)}
               <div>
-                <h3 className="font-semibold">{userData.displayName}</h3>
-                <p className="text-sm text-gray-600">{userData.email}</p>
+                <h3 className="font-semibold text-sm sm:text-base truncate">{userData.displayName}</h3>
+                <p className="text-xs sm:text-sm text-gray-600 truncate">{userData.email}</p>
               </div>
             </div>
             <Badge className={getRoleBadgeColor(userData.role)}>
@@ -186,9 +188,255 @@ const AdminUserVerificationPanel = ({ onClose }) => {
             </Badge>
           </div>
           
-          <div className="flex items-center space-x-2">
+          {/* Action buttons section */}
+          {isPending ? (
+            <div className="flex flex-col sm:flex-row gap-2 w-full">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setSelectedUser(userData)}
+                    className="w-full sm:w-auto justify-center sm:justify-start"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    Review Details
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Review User Application</DialogTitle>
+                    <DialogDescription>
+                      Review the details and approve or reject this user's access.
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium">Name</label>
+                        <p className="text-sm text-gray-600">{userData.displayName}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Email</label>
+                        <p className="text-sm text-gray-600 break-all">{userData.email}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Role</label>
+                        <p className="text-sm text-gray-600 capitalize">{userData.role}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Applied</label>
+                        <p className="text-sm text-gray-600">
+                          {userData.createdAt ? new Date(userData.createdAt.seconds * 1000).toLocaleDateString() : 'Recently'}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {userData.role === 'driver' && (
+                      <div className="space-y-3">
+                        <Alert>
+                          <Car className="h-4 w-4" />
+                          <AlertDescription>
+                            This user is applying for driver access. Drivers can share their live location for bus tracking.
+                          </AlertDescription>
+                        </Alert>
+                        
+                        {userData.driverInfo && (
+                          <div className="p-3 bg-muted rounded-lg">
+                            <h4 className="font-medium mb-2">Driver Information</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span className="font-medium">License:</span> {userData.driverInfo.licenseNumber}
+                              </div>
+                              <div>
+                                <span className="font-medium">Bus Number:</span> {userData.driverInfo.busNumber}
+                              </div>
+                              <div>
+                                <span className="font-medium">Route:</span> {userData.driverInfo.route}
+                              </div>
+                              <div>
+                                <span className="font-medium">Phone:</span> {userData.driverInfo.phoneNumber}
+                              </div>
+                            </div>
+                            {userData.driverInfo.additionalInfo && (
+                              <div className="mt-2">
+                                <span className="font-medium">Additional Info:</span>
+                                <p className="text-sm text-muted-foreground mt-1">{userData.driverInfo.additionalInfo}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:space-x-2 space-y-2 sm:space-y-0">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleRejectUser(userData.id, userData.email)}
+                      disabled={actionLoading}
+                      className="w-full sm:w-auto order-2 sm:order-1"
+                    >
+                      <XCircle className="h-4 w-4 mr-1" />
+                      {actionLoading ? 'Rejecting...' : 'Reject'}
+                    </Button>
+                    <Button 
+                      onClick={() => handleApproveUser(userData.id, userData.email)}
+                      disabled={actionLoading}
+                      className="w-full sm:w-auto order-1 sm:order-2"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      {actionLoading ? 'Approving...' : 'Approve'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              
+              {/* Quick action buttons for mobile */}
+              <div className="flex gap-2 sm:hidden">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => handleRejectUser(userData.id, userData.email)}
+                  disabled={actionLoading}
+                  className="flex-1"
+                >
+                  <XCircle className="h-4 w-4 mr-1" />
+                  Reject
+                </Button>
+                <Button 
+                  size="sm"
+                  onClick={() => handleApproveUser(userData.id, userData.email)}
+                  disabled={actionLoading}
+                  className="flex-1"
+                >
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Approve
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-end">
+              <Badge variant="outline" className="text-green-600">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Verified
+              </Badge>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <Users className="h-8 w-8 animate-pulse mx-auto mb-2" />
+          <p>Loading users...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold">User Verification Panel</h1>
+          <p className="text-sm sm:text-base text-gray-600">Manage user access and verification</p>
+        </div>
+        <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
+          Close Panel
+        </Button>
+      </div>
+
+      <Tabs defaultValue="pending" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2 h-auto p-1">
+          <TabsTrigger value="pending" className="flex items-center space-x-2 text-xs sm:text-sm py-2">
+            <Clock className="h-4 w-4" />
+            <span className="hidden sm:inline">Pending</span>
+            <span className="sm:hidden">({pendingUsers.length})</span>
+            <span className="hidden sm:inline">({pendingUsers.length})</span>
+          </TabsTrigger>
+          <TabsTrigger value="verified" className="flex items-center space-x-2 text-xs sm:text-sm py-2">
+            <UserCheck className="h-4 w-4" />
+            <span className="hidden sm:inline">Verified</span>
+            <span className="sm:hidden">({verifiedUsers.length})</span>
+            <span className="hidden sm:inline">({verifiedUsers.length})</span>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="pending">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2 text-lg sm:text-xl">
+                <Clock className="h-5 w-5" />
+                <span>Pending Verification</span>
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Users waiting for admin approval to access the system
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[60vh] sm:h-96">
+                {pendingUsers.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>No pending users</p>
+                  </div>
+                ) : (
+                  pendingUsers.map(userData => (
+                    <UserCard key={userData.id} user={userData} isPending={true} />
+                  ))
+                )}
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="verified">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2 text-lg sm:text-xl">
+                <UserCheck className="h-5 w-5" />
+                <span>Verified Users</span>
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Users who have been approved and have access to the system
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[60vh] sm:h-96">
+                {verifiedUsers.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <UserCheck className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>No verified users yet</p>
+                  </div>
+                ) : (
+                  verifiedUsers.map(userData => (
+                    <UserCard key={userData.id} user={userData} isPending={false} />
+                  ))
+                )}
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default AdminUserVerificationPanel;
             {isPending ? (
-              <>
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button 
@@ -196,7 +444,7 @@ const AdminUserVerificationPanel = ({ onClose }) => {
                       size="sm"
                       onClick={() => setSelectedUser(userData)}
                     >
-                      <Eye className="h-4 w-4 mr-1" />
+                      <Eye className="h-4 w-4 sm:mr-1" />
                       Review
                     </Button>
                   </DialogTrigger>
@@ -208,7 +456,7 @@ const AdminUserVerificationPanel = ({ onClose }) => {
                       </DialogDescription>
                     </DialogHeader>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="text-sm font-medium">Name</label>
@@ -274,7 +522,7 @@ const AdminUserVerificationPanel = ({ onClose }) => {
                       </Alert>
                     )}
                     
-                    <DialogFooter className="space-x-2">
+                    <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
                       <Button 
                         variant="outline" 
                         onClick={() => handleRejectUser(userData.id, userData.email)}
@@ -293,7 +541,7 @@ const AdminUserVerificationPanel = ({ onClose }) => {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
-              </>
+              </div>
             ) : (
               <Badge variant="outline" className="text-green-600">
                 <CheckCircle className="h-3 w-3 mr-1" />
@@ -304,7 +552,8 @@ const AdminUserVerificationPanel = ({ onClose }) => {
         </div>
       </CardContent>
     </Card>
-  );
+  };
+  
 
   if (loading) {
     return (
@@ -318,7 +567,7 @@ const AdminUserVerificationPanel = ({ onClose }) => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">User Verification Panel</h1>
@@ -330,7 +579,7 @@ const AdminUserVerificationPanel = ({ onClose }) => {
       </div>
 
       <Tabs defaultValue="pending" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-2 h-auto">
           <TabsTrigger value="pending" className="flex items-center space-x-2">
             <Clock className="h-4 w-4" />
             <span>Pending ({pendingUsers.length})</span>
@@ -353,7 +602,7 @@ const AdminUserVerificationPanel = ({ onClose }) => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-96">
+              <ScrollArea className="h-[60vh] sm:h-96">
                 {pendingUsers.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
@@ -381,7 +630,7 @@ const AdminUserVerificationPanel = ({ onClose }) => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-96">
+              <ScrollArea className="h-[60vh] sm:h-96">
                 {verifiedUsers.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <UserCheck className="h-12 w-12 mx-auto mb-2 opacity-50" />
