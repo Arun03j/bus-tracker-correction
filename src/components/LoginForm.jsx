@@ -67,7 +67,7 @@ const LoginForm = ({ onSwitchToSignup, onLoginSuccess }) => {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">JPR Bus Tracker</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
         <CardDescription className="text-center">
           Sign in to access the bus tracking system
         </CardDescription>
