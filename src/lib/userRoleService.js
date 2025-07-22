@@ -107,9 +107,9 @@ export const requestDriverVerification = async (userId, driverInfo) => {
 };
 
 /**
- * Verify driver (admin function)
+ * Verify user (admin function) - works for both drivers and students
  */
-export const verifyDriver = async (userId, isApproved, adminNotes = '') => {
+export const verifyUser = async (userId, isApproved, adminNotes = '') => {
   try {
     // First check if the user document exists
     const userRef = doc(db, 'users', userId);
@@ -120,11 +120,6 @@ export const verifyDriver = async (userId, isApproved, adminNotes = '') => {
     }
     
     const currentData = userSnap.data();
-    
-    // Ensure the user is actually a driver requesting verification
-    if (currentData.role !== USER_ROLES.DRIVER) {
-      throw new Error('User is not a driver');
-    }
     
     const updateData = {
       ...currentData, // Preserve existing data
@@ -148,11 +143,17 @@ export const verifyDriver = async (userId, isApproved, adminNotes = '') => {
     
     return { success: true };
   } catch (error) {
-    console.error('Error verifying driver:', error);
-    return { success: false, error: error.message || 'Failed to verify driver' };
+    console.error('Error verifying user:', error);
+    return { success: false, error: error.message || 'Failed to verify user' };
   }
 };
 
+/**
+ * Verify driver (admin function) - backward compatibility
+ */
+export const verifyDriver = async (userId, isApproved, adminNotes = '') => {
+  return await verifyUser(userId, isApproved, adminNotes);
+};
 /**
  * Get pending driver verifications (admin function)
  */

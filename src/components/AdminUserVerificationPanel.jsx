@@ -40,7 +40,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase.js';
 import { useAuth } from '../hooks/useAuth.jsx';
-import { verifyDriver } from '../lib/userRoleService.js';
+import { verifyUser } from '../lib/userRoleService.js';
 
 const AdminUserVerificationPanel = ({ onClose }) => {
   const { user } = useAuth();
@@ -104,7 +104,7 @@ const AdminUserVerificationPanel = ({ onClose }) => {
     setActionLoading(true);
     setError('');
     try {
-      const result = await verifyDriver(userId, true, `Approved by ${user.email}`);
+      const result = await verifyUser(userId, true, `Approved by ${user.email}`);
       
       if (!result.success) {
         setError(result.error || 'Failed to approve user');
@@ -125,7 +125,7 @@ const AdminUserVerificationPanel = ({ onClose }) => {
     setActionLoading(true);
     setError('');
     try {
-      const result = await verifyDriver(userId, false, `Rejected by ${user.email}`);
+      const result = await verifyUser(userId, false, `Rejected by ${user.email}`);
       
       if (!result.success) {
         setError(result.error || 'Failed to reject user');
@@ -267,6 +267,15 @@ const AdminUserVerificationPanel = ({ onClose }) => {
                           </div>
                         )}
                       </div>
+                    )}
+                    
+                    {userData.role === 'student' && (
+                      <Alert>
+                        <GraduationCap className="h-4 w-4" />
+                        <AlertDescription>
+                          This user is applying for student access. Students can view bus locations and track live drivers.
+                        </AlertDescription>
+                      </Alert>
                     )}
                   </div>
                   
