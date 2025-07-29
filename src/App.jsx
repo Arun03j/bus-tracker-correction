@@ -250,7 +250,7 @@ const AppContent = () => {
           onBusSelect={handleBusSelect}
           selectedDriver={selectedDriver}
           onDriverSelect={handleDriverSelect}
-          className="h-full w-full"
+          className={`h-full w-full ${isMobile ? 'mobile-map-wrapper' : ''}`}
         />
         
         {/* Info Panel for selected items */}

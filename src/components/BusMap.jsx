@@ -187,6 +187,7 @@ const BusMap = ({
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationError, setLocationError] = useState('');
   const [isMobile, setIsMobile] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef();
 
   // Check if mobile
@@ -200,6 +201,24 @@ const BusMap = ({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Force map resize on mobile orientation change
+  useEffect(() => {
+    const handleOrientationChange = () => {
+      setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.invalidateSize();
+        }
+      }, 100);
+    };
+
+    window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('resize', handleOrientationChange);
+    
+    return () => {
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      window.removeEventListener('resize', handleOrientationChange);
+    };
+  }, []);
   // Listen to live driver locations
   useEffect(() => {
     const unsubscribe = listenToDriverLocations((drivers) => {
@@ -298,20 +317,22 @@ const BusMap = ({
 
   // Force map to resize when component mounts
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (mapRef.current) {
-        const map = mapRef.current;
-        if (map && map.invalidateSize) {
-          map.invalidateSize();
-        }
-      }
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, []);
+    if (mapReady && mapRef.current) {
+      // Multiple resize attempts for mobile compatibility
+      const timers = [100, 300, 500, 1000].map(delay => 
+        setTimeout(() => {
+          if (mapRef.current) {
+            mapRef.current.invalidateSize();
+          }
+        }, delay)
+      );
+      
+      return () => timers.forEach(timer => clearTimeout(timer));
+    }
+  }, [mapReady]);
 
   return (
-    <div className={`h-full w-full ${className}`}>
+    <div className={`h-full w-full relative ${className}`} style={{ minHeight: isMobile ? '100vh' : '400px' }}>
       {/* Show My Location Button */}
       <div className={`absolute z-[1000] pointer-events-auto ${
         isMobile ? 'bottom-20 right-4' : 'top-4 left-4'
@@ -354,13 +375,27 @@ const BusMap = ({
         center={getMapCenter()}
         zoom={13}
         zoomControl={true}
-        className="h-full w-full map-container"
-        style={{ height: '100%', width: '100%', minHeight: '400px' }}
+        className={`h-full w-full map-container ${isMobile ? 'mobile-map' : ''}`}
+        style={{ 
+          height: isMobile ? '100vh' : '100%', 
+          width: '100%', 
+          minHeight: isMobile ? '100vh' : '400px',
+          position: 'relative',
+          zIndex: 1
+        }}
         ref={mapRef}
-        whenCreated={(mapInstance) => {
+        whenReady={(mapInstance) => {
           mapRef.current = mapInstance;
-          // Force resize after map is created
-          setTimeout(() => mapInstance.invalidateSize(), 100);
+          setMapReady(true);
+          
+          // Multiple resize attempts for mobile
+          [50, 100, 200, 500].forEach(delay => {
+            setTimeout(() => {
+              if (mapInstance && mapInstance.invalidateSize) {
+                mapInstance.invalidateSize();
+              }
+            }, delay);
+          });
         }}
       >
         <TileLayer
