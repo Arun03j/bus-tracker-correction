@@ -124,8 +124,30 @@
 
 /* Custom styles for bus tracking app */
 .map-container {
-  height: 100vh;
+  height: 100vh !important;
   width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure Leaflet map container has proper dimensions */
+.leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+  z-index: 1;
+}
+
+/* Fix for mobile map rendering */
+@media (max-width: 768px) {
+  .map-container {
+    height: 100vh !important;
+    min-height: 100vh !important;
+  }
+  
+  .leaflet-container {
+    height: 100vh !important;
+    min-height: 100vh !important;
+  }
 }
 
 .bus-marker {

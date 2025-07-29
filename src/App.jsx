@@ -250,7 +250,7 @@ const AppContent = () => {
           onBusSelect={handleBusSelect}
           selectedDriver={selectedDriver}
           onDriverSelect={handleDriverSelect}
-          className="h-full"
+          className="h-full w-full"
         />
         
         {/* Info Panel for selected items */}

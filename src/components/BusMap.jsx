@@ -14,6 +14,9 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+// Ensure Leaflet CSS is loaded
+import 'leaflet/dist/leaflet.css';
+
 // Custom blue marker icon for user location
 const createUserLocationIcon = () => {
   return L.divIcon({
@@ -293,6 +296,20 @@ const BusMap = ({
     return [avgLat, avgLng];
   };
 
+  // Force map to resize when component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (mapRef.current) {
+        const map = mapRef.current;
+        if (map && map.invalidateSize) {
+          map.invalidateSize();
+        }
+      }
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className={`h-full w-full ${className}`}>
       {/* Show My Location Button */}
@@ -336,13 +353,20 @@ const BusMap = ({
       <MapContainer
         center={getMapCenter()}
         zoom={13}
-        zoomControl={false}
-        className="h-full w-full"
+        zoomControl={true}
+        className="h-full w-full map-container"
+        style={{ height: '100%', width: '100%', minHeight: '400px' }}
         ref={mapRef}
+        whenCreated={(mapInstance) => {
+          mapRef.current = mapInstance;
+          // Force resize after map is created
+          setTimeout(() => mapInstance.invalidateSize(), 100);
+        }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
         />
         
         <MapUpdater 
