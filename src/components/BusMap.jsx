@@ -14,6 +14,9 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+// Ensure Leaflet CSS is loaded
+import 'leaflet/dist/leaflet.css';
+
 // Custom blue marker icon for user location
 const createUserLocationIcon = () => {
   return L.divIcon({
@@ -184,6 +187,7 @@ const BusMap = ({
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationError, setLocationError] = useState('');
   const [isMobile, setIsMobile] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef();
 
   // Check if mobile
@@ -197,6 +201,24 @@ const BusMap = ({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Force map resize on mobile orientation change
+  useEffect(() => {
+    const handleOrientationChange = () => {
+      setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.invalidateSize();
+        }
+      }, 100);
+    };
+
+    window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('resize', handleOrientationChange);
+    
+    return () => {
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      window.removeEventListener('resize', handleOrientationChange);
+    };
+  }, []);
   // Listen to live driver locations
   useEffect(() => {
     const unsubscribe = listenToDriverLocations((drivers) => {
@@ -293,8 +315,24 @@ const BusMap = ({
     return [avgLat, avgLng];
   };
 
+  // Force map to resize when component mounts
+  useEffect(() => {
+    if (mapReady && mapRef.current) {
+      // Multiple resize attempts for mobile compatibility
+      const timers = [100, 300, 500, 1000].map(delay => 
+        setTimeout(() => {
+          if (mapRef.current) {
+            mapRef.current.invalidateSize();
+          }
+        }, delay)
+      );
+      
+      return () => timers.forEach(timer => clearTimeout(timer));
+    }
+  }, [mapReady]);
+
   return (
-    <div className={`h-full w-full ${className}`}>
+    <div className={`h-full w-full relative ${className}`} style={{ minHeight: isMobile ? '100vh' : '400px' }}>
       {/* Show My Location Button */}
       <div className={`absolute z-[1000] pointer-events-auto ${
         isMobile ? 'bottom-20 right-4' : 'top-4 left-4'
@@ -336,13 +374,34 @@ const BusMap = ({
       <MapContainer
         center={getMapCenter()}
         zoom={13}
-        zoomControl={false}
-        className="h-full w-full"
+        zoomControl={true}
+        className={`h-full w-full map-container ${isMobile ? 'mobile-map' : ''}`}
+        style={{ 
+          height: isMobile ? '100vh' : '100%', 
+          width: '100%', 
+          minHeight: isMobile ? '100vh' : '400px',
+          position: 'relative',
+          zIndex: 1
+        }}
         ref={mapRef}
+        whenReady={(mapInstance) => {
+          mapRef.current = mapInstance;
+          setMapReady(true);
+          
+          // Multiple resize attempts for mobile
+          [50, 100, 200, 500].forEach(delay => {
+            setTimeout(() => {
+              if (mapInstance && mapInstance.invalidateSize) {
+                mapInstance.invalidateSize();
+              }
+            }, delay);
+          });
+        }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
         />
         
         <MapUpdater 

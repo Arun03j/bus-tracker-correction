@@ -124,8 +124,48 @@
 
 /* Custom styles for bus tracking app */
 .map-container {
-  height: 100vh;
+  height: 100% !important;
   width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.mobile-map {
+  height: 100vh !important;
+  min-height: 100vh !important;
+}
+
+/* Ensure Leaflet map container has proper dimensions */
+.leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+  z-index: 1;
+  background: #f8f9fa;
+}
+
+/* Fix for mobile map rendering */
+@media (max-width: 768px) {
+  .map-container {
+    height: 100vh !important;
+    min-height: 100vh !important;
+    position: relative;
+  }
+  
+  .leaflet-container {
+    height: 100vh !important;
+    min-height: 100vh !important;
+    position: relative !important;
+  }
+  
+  /* Fix for iOS Safari */
+  .leaflet-container {
+    height: -webkit-fill-available !important;
+  }
+  
+  /* Ensure tiles load properly on mobile */
+  .leaflet-tile-container {
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 .bus-marker {
@@ -174,6 +214,13 @@
 
 /* Improve touch targets for mobile */
 @media (max-width: 768px) {
+  .mobile-map-wrapper {
+    height: 100vh !important;
+    min-height: 100vh !important;
+    width: 100vw !important;
+    position: relative;
+  }
+  
   .touch-manipulation {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
@@ -199,6 +246,7 @@
   /* Fix overlapping elements on mobile */
   .map-container {
     position: relative;
+    overflow: hidden;
   }
   
   /* Ensure proper z-index stacking */
@@ -219,6 +267,14 @@
   .mobile-info-panel {
     top: 60px !important;
     margin: 8px;
+  }
+  
+  /* Force hardware acceleration for better mobile performance */
+  .leaflet-container,
+  .leaflet-tile,
+  .leaflet-tile-container {
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
   }
 }
 
