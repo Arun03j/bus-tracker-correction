@@ -4,11 +4,15 @@ import { useAuth } from '../hooks/useAuth.jsx';
 import useUserRole from '../hooks/useUserRole.js';
 import AuthPage from './AuthPage.jsx';
 import PendingVerification from './PendingVerification.jsx';
+import BusMap from './BusMap.jsx';
+import BusSidebar from './BusSidebar.jsx';
+import { useBusLocations } from '../hooks/useBusData.js';
 import { Loader2 } from 'lucide-react';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading, initialized } = useAuth();
   const { userProfile, isVerified, isPending, loading: roleLoading } = useUserRole();
+  const { buses, loading: busLoading, connected } = useBusLocations();
 
   // Show loading spinner while authentication state is being determined
   if (!initialized || loading || roleLoading) {
@@ -32,10 +36,22 @@ const ProtectedRoute = ({ children }) => {
     return <PendingVerification user={user} userProfile={userProfile} />;
   }
 
-  // If user exists but no profile found, they might be an old user or a new user whose profile hasn't loaded yet
-  // In this case, assume pending and show PendingVerification to enforce admin approval
+  // If user exists but no profile found, show a basic map view while profile loads
   if (user && !userProfile && !roleLoading) {
-    return <PendingVerification user={user} userProfile={null} />;
+    return (
+      <div className="flex h-screen bg-background">
+        <div className="w-80 bg-card border-r p-4">
+          <h1 className="text-lg font-bold mb-4">JPR Bus Tracker</h1>
+          <div className="text-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Loading your profile...</p>
+          </div>
+        </div>
+        <div className="flex-1">
+          <BusMap buses={buses} />
+        </div>
+      </div>
+    );
   }
 
   // Render protected content if user is authenticated and manually verified

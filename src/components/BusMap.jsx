@@ -9,13 +9,10 @@ import { listenToDriverLocations } from '../lib/locationService.js';
 // Fix for default markers in React Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
-
-// Ensure Leaflet CSS is loaded
-import 'leaflet/dist/leaflet.css';
 
 // Custom blue marker icon for user location
 const createUserLocationIcon = () => {
@@ -302,6 +299,13 @@ const BusMap = ({
   
   // Calculate center based on available data
   const getMapCenter = () => {
+    // Always return a valid center
+    if (!buses || buses.length === 0) {
+      if (!driverLocations || driverLocations.length === 0) {
+        return defaultCenter;
+      }
+    }
+    
     const allLocations = [
       ...buses.filter(bus => bus.latitude && bus.longitude),
       ...driverLocations.filter(driver => driver.latitude && driver.longitude)
@@ -373,35 +377,42 @@ const BusMap = ({
 
       <MapContainer
         center={getMapCenter()}
-        zoom={13}
+        zoom={12}
         zoomControl={true}
+        scrollWheelZoom={true}
+        doubleClickZoom={true}
+        dragging={true}
+        touchZoom={true}
         className={`h-full w-full map-container ${isMobile ? 'mobile-map' : ''}`}
         style={{ 
           height: isMobile ? '100vh' : '100%', 
           width: '100%', 
           minHeight: isMobile ? '100vh' : '400px',
-          position: 'relative',
+          position: isMobile ? 'absolute' : 'relative',
           zIndex: 1
         }}
         ref={mapRef}
-        whenReady={(mapInstance) => {
-          mapRef.current = mapInstance;
+        whenReady={() => {
           setMapReady(true);
+        }}
+        whenCreated={(mapInstance) => {
+          mapRef.current = mapInstance;
           
-          // Multiple resize attempts for mobile
-          [50, 100, 200, 500].forEach(delay => {
-            setTimeout(() => {
-              if (mapInstance && mapInstance.invalidateSize) {
-                mapInstance.invalidateSize();
-              }
-            }, delay);
-          });
+          // Force map to resize after creation
+          setTimeout(() => {
+            if (mapInstance) {
+              mapInstance.invalidateSize();
+            }
+          }, 100);
         }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           maxZoom={19}
+          minZoom={3}
+          tileSize={256}
+          zoomOffset={0}
         />
         
         <MapUpdater 

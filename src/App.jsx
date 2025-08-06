@@ -71,6 +71,28 @@ const AppContent = () => {
   // Use only real bus data from Firebase
   const displayBuses = buses;
 
+  // Show a basic map view for unverified users
+  if (user && !isVerified && !isPending && !showVerificationForm && !showAdminPanel && !showAdminDashboard) {
+    return (
+      <div className="flex h-screen bg-background">
+        <div className="w-80 bg-card border-r p-4">
+          <h1 className="text-lg font-bold mb-4">JPR Bus Tracker</h1>
+          <div className="text-center py-8">
+            <div className="mb-4">
+              <h3 className="font-semibold mb-2">Account Under Review</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Your account is being reviewed by an administrator. You can view the map while waiting for approval.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1">
+          <BusMap buses={displayBuses} />
+        </div>
+      </div>
+    );
+  }
+
   // Show verification form for pending drivers
   if (isDriver && isPending && showVerificationForm) {
     return (
@@ -250,7 +272,7 @@ const AppContent = () => {
           onBusSelect={handleBusSelect}
           selectedDriver={selectedDriver}
           onDriverSelect={handleDriverSelect}
-          className={`h-full w-full ${isMobile ? 'mobile-map-wrapper' : ''}`}
+          className="h-full w-full"
         />
         
         {/* Info Panel for selected items */}

@@ -23,15 +23,17 @@ export const useBusLocations = () => {
       setError(null);
     });
 
-    // Handle connection errors
-    const handleError = (err) => {
-      setError(err.message || 'Connection error');
-      setConnected(false);
-      setLoading(false);
-    };
+    // Set a timeout to ensure we don't stay in loading state forever
+    const timeout = setTimeout(() => {
+      if (loading) {
+        setLoading(false);
+        setConnected(true);
+      }
+    }, 5000);
 
     // Cleanup subscription on unmount
     return () => {
+      clearTimeout(timeout);
       if (unsubscribe) {
         unsubscribe();
       }

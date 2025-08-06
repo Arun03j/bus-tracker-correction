@@ -11,9 +11,24 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    global: 'globalThis',
+  },
   server: {
     host: '0.0.0.0',
     port: 5173,
-    allowedHosts: ['all']
+    allowedHosts: ['all'],
+    hmr: {
+      overlay: false
+    }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          leaflet: ['leaflet', 'react-leaflet']
+        }
+      }
+    }
   }
 })
